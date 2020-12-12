@@ -1,6 +1,8 @@
 <template>
   <div class="login-container">
-    <van-nav-bar class="page-nav-bar" title="登录" />
+    <van-nav-bar class="page-nav-bar" title="登录">
+      <i slot="left" class="iconshop iconzuojiantou" @click="$router.back()"></i>
+    </van-nav-bar>
     <van-form @submit="onSubmit" ref="loginFormRef">
       <!-- number只能输入数字，maxlength是最大输入长度 -->
       <van-field
@@ -98,7 +100,8 @@ export default {
       try {
         const { data: res } = await login(user);
         this.$store.commit("setUser", res.data);
-        console.log("登录成功", res);
+        // 返回上一个页面
+        this.$router.back();
         this.$toast.success("登录成功");
       } catch (err) {
         if (err.response.status === 400) {
@@ -122,7 +125,9 @@ export default {
         // 调用获取手机验证码的接口
         await sendSms(this.user.mobile);
       } catch (err) {
+        // 错误直接关闭倒计时
         this.daojishishow = false;
+        // 错误信息429的话就是接口一分钟只能调用一次
         if (err.response.status === 429) {
           this.$toast("发送太频繁，请稍后再试");
         } else {
