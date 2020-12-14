@@ -2,6 +2,8 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+// 全局导入dayjs文件
+import '@/utils/dayjs.js'
 // 全局定义的css文件
 import './styles/index.less'
 // 导入vant框架

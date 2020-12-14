@@ -81,4 +81,5 @@ body {
 .page-nav-bar .van-nav-bar__title,
 .page-nav-bar i {
   color: #fff;
+  max-width: unset;
 }
