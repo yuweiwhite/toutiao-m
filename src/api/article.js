@@ -6,3 +6,4 @@ export const getArticleList = params => {
     params
   })
 }
+

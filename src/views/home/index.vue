@@ -1,7 +1,15 @@
 <template>
   <div class="home-container">
     <van-nav-bar class="page-nav-bar" fixed>
-      <van-button slot="title" class="search-btn" type="info" round size="small" icon="search">搜索</van-button>
+      <van-button
+        slot="title"
+        class="search-btn"
+        type="info"
+        round
+        size="small"
+        icon="search"
+        to="/search"
+      >搜索</van-button>
     </van-nav-bar>
     <!-- 标签页  active是绑定当前高亮的索引， swipeable手滑动 animated动画-->
     <van-tabs class="home-tabs" v-model="active" animated swipeable>
