@@ -12,41 +12,81 @@
       <div slot="nav-right" class="before-right"></div>
       <!-- 右插槽，icon图标 -->
       <div slot="nav-right" class="icon-right">
-        <i class="iconshop icongengduo"></i>
+        <i class="iconshop icongengduo" @click="isChannelShow=true"></i>
       </div>
     </van-tabs>
+    <!-- 弹出层Popup -->
+    <van-popup
+      v-model="isChannelShow"
+      closeable
+      position="bottom"
+      close-icon-position="top-left"
+      :style="{ height: '100%' }"
+    >
+      <!-- 内容组件化 -->
+      <channel-edit :my-channel="channels" :active="active" @update-active="onActive"></channel-edit>
+    </van-popup>
   </div>
 </template>
 
 <script>
 import { getUserChannel } from "@/api/user";
+import { mapState } from "vuex";
+import { getItem } from "@/utils/storage";
 // 导入局部组件
 import ArticleList from "./article-list";
+import ChannelEdit from "./channel-edit";
 export default {
   data() {
     return {
       active: 0,
       // 频道列表数据tab
       channels: [],
+      // 弹窗
+      isChannelShow: false,
     };
+  },
+  computed: {
+    ...mapState(["user"]),
   },
   created() {
     this.loadUserChannel();
   },
   methods: {
-    // 调用频道列表数据接口
+    // 调用频道列表数据接口,需要判断用户是否登入
     async loadUserChannel() {
       try {
-        const { data: res } = await getUserChannel();
-        console.log(res.data);
-        this.channels = res.data.channels;
+        let channa = [];
+        // 用户登录就调用接口，直接赋值数据
+        if (this.user) {
+          const { data: res } = await getUserChannel();
+          channa = res.data.channels;
+        } else {
+          // 用户未登录状态， 需要获取本地存储的数据，如果没有就需要调用默认数据接口
+          if (getItem("toutiao")) {
+            channa = getItem("toutiao");
+          } else {
+            // 没有本地储存调用默认数据接口
+            const { data: res } = await getUserChannel();
+            channa = res.data.channels;
+          }
+        }
+        this.channels = channa;
       } catch (err) {
         this.$toast("获取频道信息列表数据失败");
       }
     },
+    // 子组件监听事件
+    onActive(i, boo) {
+      // 频道推荐点击跳转到指定页面，让当前的active值改变， 子组件不能直接改变父组件的值
+      this.active = i;
+      // 关闭弹窗
+      this.isChannelShow = boo;
+    },
   },
   components: {
     ArticleList,
+    ChannelEdit,
   },
 };
 </script>
