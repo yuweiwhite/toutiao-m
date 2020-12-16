@@ -1,5 +1,5 @@
 <template>
-  <van-cell class="article-cell">
+  <van-cell class="article-cell" :to="`/details/${article.art_id}`">
     <!-- van-multi-ellipsis--l2  最多显示2行文字，之后...代替， Vant内置模块 -->
     <div slot="title" class="title van-multi-ellipsis--l2">{{article.title}}</div>
     <div slot="label">

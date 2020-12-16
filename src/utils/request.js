@@ -1,7 +1,19 @@
 import axios from 'axios'
 import store from '@/store'
+import JSONBig from 'json-bigint'
 const request = axios.create({
-  baseURL: "http://ttapi.research.itcast.cn/" // 基础路径
+  baseURL: "http://ttapi.research.itcast.cn/", // 基础路径
+
+  // 返回数据自定义会转化JSON, 超过了安全数字就会出现乱码。需要使用插件来转换
+  transformResponse: [function (data) {
+    // Do whatever you want to transform the data
+    try {
+      return JSONBig.parse(data)
+    } catch (err) {
+      return data;
+    }
+  }],
+
 })
 
 // 请求拦截器
