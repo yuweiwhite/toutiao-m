@@ -31,11 +31,23 @@
         <!-- 文章内容 -->
         <div class="article-content markdown-body" ref="detailsContent" v-html="details.content"></div>
         <van-divider>正文结束</van-divider>
-
+        <!-- 留言区域 -->
+        <comment-list
+          :source="details.art_id"
+          @load-tatol="total = $event.total_count"
+          :list="listComment"
+          @reply-click="onReplyClick"
+        ></comment-list>
         <!-- 底部区域 -->
         <div class="article-bottom">
-          <van-button class="comment-btn" type="default" round size="small">写评论</van-button>
-          <van-icon name="comment-o" badge="123" color="#777" />
+          <van-button
+            class="comment-btn"
+            type="default"
+            round
+            size="small"
+            @click="isPopupShow = true"
+          >写评论</van-button>
+          <van-icon name="comment-o" :badge="total" color="#777" />
           <!-- 收藏按钮拆分组件 -->
           <collect-article v-model="details.is_collected" :collect-id="details.art_id"></collect-article>
           <!-- 点赞组件拆分 -->
@@ -43,6 +55,11 @@
 
           <van-icon name="share" color="#777777"></van-icon>
         </div>
+        <!-- 弹出层popup -->
+        <van-popup v-model="isPopupShow" position="bottom">
+          <!-- 弹出层内容组件 -->
+          <comment-post :target="details.art_id" @post-success="postSuccess"></comment-post>
+        </van-popup>
         <!-- /底部区域 -->
       </div>
       <!-- /加载完成-文章详情 -->
@@ -62,6 +79,10 @@
       </div>
       <!-- /加载失败：其它未知错误（例如网络原因或服务端异常） -->
     </div>
+    <van-popup v-model="isReplyShow" position="bottom" :style="{ height: '100%' }">
+      <!-- v-if条件渲染，如果的组件的话就会直接销毁，如果不销毁的话渲染组件一直在就不会跟新数据 -->
+      <comment-reply v-if="isReplyShow" :comment="currentComment" @close="isReplyShow = false"></comment-reply>
+    </van-popup>
   </div>
 </template>
 
@@ -72,15 +93,41 @@ import { ImagePreview } from "vant";
 import followUser from "@/components/follow-user";
 import collectArticle from "@/components/collect-article";
 import likeArticle from "@/components/like-article";
+import CommentList from "./comment-list";
+import CommentPost from "./comment-post";
+import CommentReply from "./comment-reply";
 export default {
   data() {
     return {
       details: {},
       loading: true,
+      // 判断返回404不能给自己点赞
       errStatus: 0,
+      // 总共评论数
+      total: 0,
+      // 弹出层显示
+      isPopupShow: false,
+      // 传给list的评论数据
+      listComment: [],
+      // 点击回复弹出层
+      isReplyShow: false,
+      // 点击回复接收的数据对象
+      currentComment: {},
     };
   },
-  components: { followUser, collectArticle, likeArticle },
+  components: {
+    followUser,
+    collectArticle,
+    likeArticle,
+    CommentList,
+    CommentPost,
+    CommentReply,
+  },
+  provide: function () {
+    return {
+      id: this.id,
+    };
+  },
   props: {
     id: {
       type: [Number, String, Object],
@@ -113,6 +160,7 @@ export default {
       // 不管成功失败都需要关闭loading
       this.loading = false;
     },
+    // 页面渲染图片预览
     previewImg() {
       // 拿到标签中所有的IMG， 遍历拿到所有的src，给每个图片绑定点击事件，显示图片预览对象
       const imgs = this.$refs.detailsContent.querySelectorAll("img");
@@ -128,6 +176,18 @@ export default {
           });
         };
       });
+    },
+    // 子组件发布评论监听事件
+    postSuccess(data) {
+      // 关闭弹出层
+      this.isPopupShow = false;
+      // 将发布内容显示到列表顶部
+      this.listComment.unshift(data.new_obj);
+    },
+    // 监听子组件点击回复事件
+    onReplyClick(val) {
+      this.currentComment = val;
+      this.isReplyShow = true;
     },
   },
 };
